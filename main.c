@@ -3,19 +3,13 @@
 #include <time.h>
 #include <stdbool.h>
 
-typedef struct Panel
-{
-	int Bomb;
-	int Check;
-} Panel;
 typedef struct Desk
 {
 	int Width;
 	int Height;
-	Panel** Array;
+	int** Array;
 	int CountBomb;
 } Desk;
-
 
 Desk DeskGeneration(int Width, int Height, double Percent)
 {
@@ -27,15 +21,14 @@ Desk DeskGeneration(int Width, int Height, double Percent)
 	}
 	desk.Width = Width;
 	desk.Height = Height;
-	desk.Array = (Panel**)malloc(Height * sizeof(Panel*));
+	desk.Array = (int**)malloc(Height * sizeof(int*));
 	for (int i = 0; i < Height; i++)
 	{
-		desk.Array[i] = (Panel*)malloc(Width * sizeof(Panel));
+		desk.Array[i] = (int*)malloc(Width * sizeof(int));
 		for (int j = 0; j < Width; j++)
 		{
-			desk.Array[i][j] = (Panel){ 0 ,0 };
-			desk.Array[i][j].Bomb = rand()%3 == 0 ? 1 : 0;// ((rand() % 1001) * Percent); - отредактировать
-			if (desk.Array[i][j].Bomb == 1)
+			desk.Array[i][j] = rand()%3 == 0 ? 1 : 0;// ((rand() % 1001) * Percent); - отредактировать
+			if (desk.Array[i][j] == 1)
 			{
 				desk.CountBomb++;
 			}
@@ -52,35 +45,35 @@ int isDesk(Desk desk, int x, int y)
 int BombCount(Desk desk, int x, int y)
 {
 	int count = 0;
-	if (isDesk(desk, x, y - 1) && desk.Array[y - 1][x].Bomb == 1)
+	if (isDesk(desk, x, y - 1) && desk.Array[y - 1][x] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x, y + 1) && desk.Array[y + 1][x].Bomb == 1)
+	if (isDesk(desk, x, y + 1) && desk.Array[y + 1][x] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x - 1, y - 1) && desk.Array[y - 1][x - 1].Bomb == 1)
+	if (isDesk(desk, x - 1, y - 1) && desk.Array[y - 1][x - 1] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x - 1, y) && desk.Array[y][x - 1].Bomb == 1)
+	if (isDesk(desk, x - 1, y) && desk.Array[y][x - 1] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x - 1, y + 1) && desk.Array[y + 1][x - 1].Bomb == 1)
+	if (isDesk(desk, x - 1, y + 1) && desk.Array[y + 1][x - 1] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x + 1, y - 1) && desk.Array[y - 1][x + 1].Bomb == 1)
+	if (isDesk(desk, x + 1, y - 1) && desk.Array[y - 1][x + 1] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x + 1, y) && desk.Array[y][x + 1].Bomb == 1)
+	if (isDesk(desk, x + 1, y) && desk.Array[y][x + 1] % 10 == 1)
 	{
 		count++;
 	}
-	if (isDesk(desk, x + 1, y + 1) && desk.Array[y + 1][x + 1].Bomb == 1)
+	if (isDesk(desk, x + 1, y + 1) && desk.Array[y + 1][x + 1] % 10 == 1)
 	{
 		count++;
 	}
@@ -91,20 +84,20 @@ int BombCount(Desk desk, int x, int y)
 
 void DeskOpen(Desk desk, int x, int y)
 {
-	desk.Array[y][x].Check = 1;
-	if (isDesk(desk, x, y - 1) && desk.Array[y - 1][x].Bomb == 0 && desk.Array[y - 1][x].Check == 0)
+	desk.Array[y][x] += 10;
+	if (isDesk(desk, x, y - 1) && desk.Array[y - 1][x] == 0)
 	{
 		DeskOpen(desk, x, y - 1);
 	}
-	if (isDesk(desk, x, y + 1) && desk.Array[y + 1][x].Bomb == 0 && desk.Array[y + 1][x].Check == 0)
+	if (isDesk(desk, x, y + 1) && desk.Array[y + 1][x] == 0)
 	{
 		DeskOpen(desk, x, y + 1);
 	}
-	if (isDesk(desk, x - 1, y) && desk.Array[y][x - 1].Bomb == 0 && desk.Array[y][x - 1].Check == 0)
+	if (isDesk(desk, x - 1, y) && desk.Array[y][x - 1] == 0)
 	{
 		DeskOpen(desk, x - 1, y);
 	}
-	if (isDesk(desk, x + 1, y) && desk.Array[y][x + 1].Bomb == 0 && desk.Array[y][x + 1].Check == 0)
+	if (isDesk(desk, x + 1, y) && desk.Array[y][x + 1] == 0)
 	{
 		DeskOpen(desk, x + 1, y);
 	}
@@ -114,7 +107,7 @@ int DeskClick(Desk desk, int x, int y)
 {
 	if (isDesk(desk, x, y))
 	{
-		if (desk.Array[y][x].Bomb == 1)
+		if (desk.Array[y][x] % 10 == 1)
 		{
 			return 1;
 		}
@@ -129,9 +122,9 @@ void DeskDraw(Desk desk)
 	{
 		for (int j = 0; j < desk.Width; j++)
 		{
-			if (desk.Array[i][j].Check == 1 /*|| 1 == 1*/)
+			if (desk.Array[i][j] >= 10 /*|| 1 == 1*/)
 			{
-				if (desk.Array[i][j].Bomb == 0)
+				if (desk.Array[i][j] % 10 == 0)
 				{
 					printf("%d", BombCount(desk, j, i));
 				}
